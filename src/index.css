@@ -1,0 +1,21 @@
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;color:#1a2a3a;background:#F5F0EB;overflow-x:hidden;line-height:1.7;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+img{max-width:100%;display:block}
+:root{
+  --primary:#1c4c72;--primary-dark:#123452;--primary-light:#2d6a9a;
+  --gold:#ac9458;--gold-light:#c4b07a;--gold-dark:#8a7645;
+  --cream:#F5F0EB;--warm-beige:#EDE5D8;
+  --text:#1a2a3a;--text-light:#4a5a6a;
+  --accent-warm:#c4956a;--accent-rose:#c94c4c;
+  --font-display:'Playfair Display',serif;
+  --font-serif:'DM Serif Display',serif;--font-body:'DM Sans',sans-serif;
+  --font-script:'Dancing Script',cursive;
+  --shadow-sm:0 2px 8px rgba(28,76,114,0.08);
+  --shadow-md:0 8px 32px rgba(28,76,114,0.12);
+  --shadow-lg:0 16px 48px rgba(28,76,114,0.18);
+  --radius:16px;--radius-sm:8px;
+  --transition:0.4s cubic-bezier(0.22,1,0.36,1)
+}
