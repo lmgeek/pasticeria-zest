@@ -4,7 +4,7 @@ import Hero from './components/Hero'
 import About from './components/About'
 import Gallery from './components/Gallery'
 import Menu from './components/Menu'
-import CakeDesigner from './components/CakeDesigner'
+import CakeDesigner3D from './components/CakeDesigner3D'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
 import CookieBanner from './components/CookieBanner'
@@ -45,7 +45,7 @@ export default function App() {
       <section id="about" ref={sectionRefs.about}><About /></section>
       <section id="gallery" ref={sectionRefs.gallery}><Gallery /></section>
       <section id="menu" ref={sectionRefs.menu}><Menu /></section>
-      <section id="designer" ref={sectionRefs.designer}><CakeDesigner /></section>
+      <section id="designer" ref={sectionRefs.designer}><CakeDesigner3D /></section>
       <section id="contact" ref={sectionRefs.contact}><Contact /></section>
       <Footer scrollTo={scrollTo} />
       <CookieBanner />
