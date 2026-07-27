@@ -10,7 +10,7 @@ export default function Contact() {
         </div>
         <div className="contact-grid">
           <div className="contact-info">
-            <ContactCard icon={<PinIcon />} title="Indirizzo" text="Via Laurentina, 24\n00040 Ardea RM, Italia" />
+            <ContactCard icon={<PinIcon />} title="Indirizzo" text="Calle Rattazzi\n00040 Pomezia RM, Italia" />
             <ContactCard icon={<PhoneIcon />} title="Telefono" link="tel:+393738676326" linkText="+39 373 867 6326" />
             <ContactCard icon={<MailIcon />} title="Email" link="mailto:info@zestpasticceria.it" linkText="info@zestpasticceria.it" />
             <ContactCard icon={<ClockIcon />} title="Orari" text="Lun–Sab: 07:00–20:00\nDom: 08:00–13:00" />
@@ -26,7 +26,7 @@ export default function Contact() {
               <div className="map-pin">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="white"/></svg>
               </div>
-              <p>Zest Pasticceria<br />Via Laurentina, 24 – Ardea</p>
+              <p>Zest Pasticceria<br />Calle Rattazzi – Pomezia</p>
             </div>
           </div>
         </div>

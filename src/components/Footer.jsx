@@ -13,7 +13,7 @@ export default function Footer({ scrollTo }) {
         <div className="footer-content">
           <div className="footer-brand">
             <span className="footer-logo">✦ Zest</span>
-            <p>Pasticceria Artigianale – Ardea, RM</p>
+            <p>Pasticceria Artigianale – Pomezia, RM</p>
           </div>
           <div className="footer-links">
             {LINKS.map(l => (

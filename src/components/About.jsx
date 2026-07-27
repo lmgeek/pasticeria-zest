@@ -21,8 +21,8 @@ export default function About() {
             <span className="section-label">La Nostra Storia</span>
             <h2 className="section-title">Dove nasce la <span className="italic">dolcezza</span></h2>
             <p className="about-paragraph">
-              Zest nasce ad Ardea alla fine del 2019 dall'incontro di tre amici accomunati dalla stessa passione:
-              <strong> Mario Bartolucci, Simone Barocas e Alessandro Di Lauro</strong>.
+              Zest nasce alla fine del 2019 dall'incontro di due amici accomunati dalla stessa passione:
+              <strong> Alessandro y Natascia</strong>.
               Il nome racconta già tutto — come la scorza di limone che profuma i nostri dolci,
               Zest è l'essenza, la parte più vibrante e autentica della pasticceria.
             </p>
@@ -36,7 +36,7 @@ export default function About() {
               Zest è un luogo dove la qualità artigianale incontra l'accoglienza italiana.
             </p>
             <div className="about-signature">
-              <span className="about-signature-name">Mario, Simone & Alessandro</span>
+              <span className="about-signature-name">Alessandro y Natascia</span>
               <span className="about-signature-role">Fondatori</span>
             </div>
           </div>

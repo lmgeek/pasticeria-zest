@@ -19,7 +19,12 @@
 
 /* ====== NAVBAR ====== */
 .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;padding:50px 0;background:transparent;backdrop-filter:blur(50px);-webkit-backdrop-filter:blur(50px);transition:all var(--transition)}
-.navbar.scrolled{padding:10px 0;box-shadow:0 1px 0 rgba(28,76,114,0.06)}
+.navbar.scrolled{padding:10px 0;box-shadow:0 1px 0 rgba(28,76,114,0.06);background:#ede5d8}
+.navbar.scrolled .nav-links a{color:#1a1a1a;text-shadow:none}
+.navbar.scrolled .nav-links a:hover,.navbar.scrolled .nav-links a.active{color:var(--gold-dark)}
+.navbar.scrolled .nav-social{color:#1a1a1a;filter:none}
+.navbar.scrolled .nav-social:hover{color:var(--gold-dark)}
+.navbar.scrolled .nav-toggle span{background:#1a1a1a}
 .navbar .container{display:flex;align-items:center;justify-content:space-between}
 .nav-logo{display:flex;align-items:center;z-index:2}
 .nav-logo-img{height:240px;width:auto;display:block;transition:height var(--transition)}
