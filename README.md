@@ -209,7 +209,9 @@ Esto inicia simultáneamente:
 
 ## Guía de Despliegue en Dokploy (para no-programadores)
 
-### Requisitos
+> La app es un único proyecto Next.js (frontend + API + webhooks). En Dokploy se despliega **un solo contenedor** con el `Dockerfile` de la raíz (build multi-stage + salida `standalone`), más un contenedor de MongoDB.
+
+### 0. Requisitos
 
 - Una cuenta en **Dokploy** (o cualquier VPS con Docker)
 - Una cuenta en **Stripe** (gratis, para cobros)
@@ -221,82 +223,70 @@ Esto inicia simultáneamente:
 2. Una vez dentro, ve a **Developers → API Keys** en el menú lateral
 3. Copia la **Publishable key** (empieza con `pk_live_` o `pk_test_`)
 4. Copia la **Secret key** (empieza con `sk_live_` o `sk_test_`)
-5. Ve a **Developers → Webhooks** y haz clic en **Add endpoint**
-6. Como URL del endpoint pon: `https://tudominio.com/api/checkout/webhook`
-7. Selecciona el evento `payment_intent.succeeded`
-8. Copia el **Signing secret** que te dan (empieza con `whsec_`)
 
-### 2. Configurar MongoDB en Dokploy
+### 2. Crear el contenedor de MongoDB en Dokploy
 
 1. En Dokploy, crea un nuevo contenedor con la imagen `mongo:7`
 2. Asígnale un nombre (ej: `zest-mongodb`)
-3. Mapea el puerto interno `27017` al externo que quieras
-4. Agrega un volumen persistente en `/data/db` para que los datos no se pierdan
-5. Una vez creado, anota la URI de conexión interna:
+3. Agrega un volumen persistente en `/data/db` para que los datos no se pierdan
+4. Anota la URI de conexión interna:
    - Desde otro contenedor en Dokploy: `mongodb://zest-mongodb:27017/zest-pasticceria`
-   - Desde tu máquina: `mongodb://IP_DEL_SERVIDOR:27017/zest-pasticceria`
 
-### 3. Desplegar Backend (API Node.js)
+### 3. Desplegar la app (Next.js)
 
-1. En Dokploy, crea un nuevo contenedor
-2. Selecciona tu repositorio de GitHub (o sube el contenido de la carpeta `server/`)
-3. Usa el `server/Dockerfile` incluido en el proyecto
-4. Configura las siguientes variables de entorno:
+1. En Dokploy, crea una nueva **Aplicación Dockerfile** y conecta este repositorio de GitHub
+2. Dokploy usará el `Dockerfile` de la raíz automáticamente (puerto interno `3000`)
+3. Configura las **variables de entorno** (deben incluir `NEXT_PUBLIC_URL`, que se inyecta en el build):
 
 | Variable | Valor |
 |----------|-------|
-| `PORT` | `5000` |
 | `MONGODB_URI` | `mongodb://zest-mongodb:27017/zest-pasticceria` |
 | `JWT_SECRET` | Una clave secreta larga y aleatoria |
-| `STRIPE_SECRET_KEY` | La `sk_live_...` que copiaste de Stripe |
-| `FRONTEND_URL` | `https://tudominio.com` |
+| `STRIPE_SECRET_KEY` | La `sk_live_...` / `sk_test_...` que copiaste de Stripe |
+| `STRIPE_PUBLISHABLE_KEY` | La `pk_live_...` / `pk_test_...` de Stripe |
+| `STRIPE_WEBHOOK_SECRET` | El `whsec_...` del webhook (paso 4) |
+| `NEXT_PUBLIC_URL` | `https://tudominio.com` (tu dominio real) |
+| `SMTP_HOST` | ej. `smtp.resend.com` (o el de tu proveedor) |
+| `SMTP_PORT` | `465` |
+| `SMTP_USER` | Usuario del SMTP |
+| `SMTP_PASS` | Contraseña del SMTP |
+| `SMTP_SECURE` | `true` |
+| `STORE_EMAIL` | Remitente, ej. `hello@zestpasticceria.com` |
+| `GOOGLE_CLIENT_ID` | *(opcional)* Login con Google |
+| `GOOGLE_CLIENT_SECRET` | *(opcional)* Login con Google |
 
-5. Mapea el puerto `5000`
+> El `nginx.conf` del repositorio es una plantilla del proxy reverso (gzip + caché estáticos + websockets). Si usas el proxy integrado de Dokploy no lo necesitas; puedes pegar la plantilla en **Ajustes → Nginx** del proyecto.
 
 ### 4. Configurar Webhook de Stripe
 
-Para que Stripe pueda notificar a tu servidor cuando un pago se confirme:
+Para que Stripe notifique al servidor cuando un pago se confirme:
 
-1. En **Docker**, asegúrate de que el backend está accesible desde internet
-2. En **Stripe Dashboard → Developers → Webhooks**, crea un endpoint:
+1. En **Stripe Dashboard → Developers → Webhooks**, crea un endpoint:
    - URL: `https://tudominio.com/api/checkout/webhook`
    - Eventos: `payment_intent.succeeded`
-3. Copia el **Signing secret** que Stripe te da
-4. Pégalo en el panel de administración de Zest en **Configuración → Stripe → Webhook Secret**
+2. Copia el **Signing secret** (`whsec_...`) y ponlo en `STRIPE_WEBHOOK_SECRET`
 
-### 5. Desplegar Frontend (React + Vite)
+### 5. Primer inicio — Seed de datos
 
-1. En Dokploy, crea otro contenedor
-2. Usa el `Dockerfile` de la raíz del proyecto (construye los archivos estáticos y los sirve con nginx)
-3. Configura la variable de entorno `VITE_API_URL` apuntando al backend:
-   - `VITE_API_URL=https://tudominio.com/api`
-4. Mapea el puerto `80`
-
-### 6. Primer inicio — Seed de datos
-
-Una vez que el backend esté funcionando, ejecuta el seed para crear el admin y datos iniciales:
+El seed crea el admin y los datos iniciales (es idempotente, se puede correr varias veces). Ejecútalo **desde tu máquina** apuntando a la base de producción:
 
 ```bash
-# Desde la terminal del contenedor backend en Dokploy
-cd /app && node seed.js
+MONGODB_URI="mongodb://zest-mongodb:27017/zest-pasticceria" npm run seed
 ```
 
-O ejecútalo localmente antes de subir:
-```bash
-cd server && npm run seed
-```
+> Si `MONGODB_URI` usa el hostname interno de Dokploy (`zest-mongodb`), ejecútalo localmente con la IP pública del servidor (`mongodb://IP_DEL_SERVIDOR:27017/zest-pasticceria`) o desde otro contenedor dentro de la red de Dokploy.
 
 Esto creará:
 - **Admin:** `luismarin@usa.com` / `LuisMarin.123`
 - **Categorías:** Torte, Dolci, Biscotti, Bevande
 - **Configuración inicial del negocio**
 
-### 7. Ingresar al panel de administración
+### 6. Ingresar al panel de administración
 
 1. Ve a `https://tudominio.com/login`
 2. Ingresa con email `luismarin@usa.com` y password `LuisMarin.123`
 3. Serás redirigido al dashboard en `/admin`
-4. Ve a **Configuración** para ingresar tus claves de Stripe y datos del negocio
+4. Ve a **Configuración** para ingresar tus claves de Stripe, datos del negocio y SMTP de email
 
 ### Tarjetas de prueba Stripe
 

@@ -19,14 +19,16 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+      args:
+        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3000}
     container_name: zest-app
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:3000"
     env_file:
       - .env.local
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/zest-pasticceria
-      - NEXT_PUBLIC_URL=http://localhost:3000
+      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3000}
     volumes:
       - .:/app
       - /app/node_modules
