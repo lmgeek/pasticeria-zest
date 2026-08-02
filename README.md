@@ -304,4 +304,335 @@ Cualquier fecha de expiración futura y CVC de 3 dígitos funcionan.
 
 ---
 
+## 📦 Plantilla de Deploy Reutilizable (para próximos proyectos)
+
+> Configuración de deploy usada en este repo, lista para copiar en futuros proyectos **Next.js + MongoDB** que se desplieguen en **Dokploy**. Patrón de referencia: [`lmgeek/nicole-trend-shop`](https://github.com/lmgeek/nicole-trend-shop).
+
+### Arquitectura
+
+- **Un solo contenedor** para la app (Next.js standalone, puerto interno `3000`).
+- **MongoDB no va dentro del compose**: se conecta por `MONGODB_URI` (Atlas externo o un contenedor aparte en Dokploy). Así la red interna, el volumen y la URI entre servicios los resuelve Docker/Dokploy solo.
+- **Admin se crea solo** en el primer arranque (`instrumentation.js` → `lib/seed.mjs`), idempotente.
+
+### 1. `Dockerfile` (raíz)
+
+```dockerfile
+FROM node:22-alpine AS base
+
+RUN apk add --no-cache libc6-compat
+
+FROM base AS deps
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm ci
+
+FROM base AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Solo si la app lee NEXT_PUBLIC_* en el build (ej: base URL de la API)
+ARG NEXT_PUBLIC_URL
+ENV NEXT_PUBLIC_URL=$NEXT_PUBLIC_URL
+
+RUN npm run build
+
+FROM base AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+
+RUN mkdir -p .next && chown nextjs:nodejs .next
+
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+> Requisito: `next.config.js` debe tener `output: 'standalone'`.
+
+### 2. `docker-compose.yml` (raíz)
+
+```yaml
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_TELEMETRY_DISABLED=1
+        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+```
+
+> El healthcheck asume que existe una ruta `app/api/health/route.js` (puede devolver `{ status: 'ok' }`).
+
+### 3. `nginx.conf` (proxy reverso opcional)
+
+```nginx
+upstream nextjs {
+    server 127.0.0.1:3000;
+    keepalive 64;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    client_max_body_size 10M;
+
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+    gzip_min_length 1000;
+    gzip_comp_level 6;
+
+    location / {
+        proxy_pass http://nextjs;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_cache_bypass $http_upgrade;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+
+    location /_next/static/ {
+        proxy_pass http://nextjs;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    location /images/ {
+        proxy_pass http://nextjs;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    location /api/ {
+        proxy_pass http://nextjs;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_connect_timeout 30s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+    }
+}
+```
+
+### 4. `.dockerignore`
+
+```
+node_modules
+.next
+.git
+.gitignore
+README.md
+.env*.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+docker-compose*.yml
+nginx.conf
+Dockerfile
+.dockerignore
+```
+
+### 5. Usuario administrador automático
+
+**Importante:** `lib/seed.mjs` **no debe** importar `dotenv` ni `node:url` — rompe el build de Next (webpack no maneja esos módulos en el bundle). El `dotenv` va solo en el CLI wrapper.
+
+`lib/seed.mjs`:
+
+```js
+import mongoose from 'mongoose'
+import User from '../models/User.js'
+import Category from '../models/Category.js'
+import StoreConfig from '../models/StoreConfig.js'
+
+export async function runSeed() {
+  if (!process.env.MONGODB_URI) {
+    console.warn('[seed] MONGODB_URI no configurada, se omite el seed.')
+    return
+  }
+
+  await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 15000 })
+  console.log('[seed] Connected to MongoDB')
+
+  const adminExists = await User.findOne({ email: 'luismarin@usa.com' })
+  if (!adminExists) {
+    await User.create({
+      email: 'luismarin@usa.com',
+      password: 'LuisMarin.123',
+      nome: 'Luis Marin',
+      ruolo: 'admin',
+    })
+    console.log('[seed] Admin user created (luismarin@usa.com)')
+  } else {
+    console.log('[seed] Admin user already exists')
+  }
+
+  // ...categorías y config inicial (idempotente, crea solo lo que falta)...
+  console.log('[seed] Seed completed successfully')
+}
+```
+
+`lib/seed-cli.mjs` (para `npm run seed` manual):
+
+```js
+import 'dotenv/config'
+import { runSeed } from './seed.mjs'
+
+runSeed()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('[seed] Seed error:', error)
+    process.exit(1)
+  })
+```
+
+`instrumentation.js` (raíz — ejecuta el seed al arrancar el servidor):
+
+```js
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function ensureSeed() {
+  const MAX_ATTEMPTS = 5
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const { runSeed } = await import('./lib/seed.mjs')
+      await runSeed()
+      return
+    } catch (error) {
+      console.error(`[instrumentation] Seed attempt ${attempt}/${MAX_ATTEMPTS} failed:`, error?.message || error)
+      if (attempt < MAX_ATTEMPTS) await sleep(5000)
+    }
+  }
+}
+
+export async function register() {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    await ensureSeed()
+  }
+}
+```
+
+En `package.json`:
+
+```json
+"scripts": {
+  "seed": "node lib/seed-cli.mjs"
+}
+```
+
+> El `register()` de `instrumentation.js` corre antes de que el servidor responda, es estable desde Next.js 15 y funciona en el output `standalone`. Si el seed falla tras los reintentos, la app igual arranca y el admin se creará en el próximo arranque/redeploy.
+
+### 6. Configuración en Dokploy
+
+1. Crea el proyecto y un servicio de tipo **Docker Compose** (o aplicación Dockerfile) apuntando al repo.
+2. Configura estas variables de entorno en Dokploy:
+
+| Variable | Valor |
+|----------|-------|
+| `MONGODB_URI` | Atlas (`mongodb+srv://...`) o interno (`mongodb://<mongo-service>:27017/db`) |
+| `JWT_SECRET` | Clave secreta larga y aleatoria |
+| `BOOTSTRAP_SECRET` | Secreto para crear el admin por API (opcional) |
+| `NEXT_PUBLIC_URL` | `https://tudominio.com` (solo lo usa el servidor, p. ej. redirects de Google OAuth) |
+| `APP_PORT` | *(opcional)* puerto externo, default `3000` |
+
+3. **MongoDB** (opción A — Atlas): crea un cluster gratuito y copia el connection string en `MONGODB_URI`. (opción B — instancia en Dokploy): crea un servicio aparte con imagen `mongo:7`, volumen en `/data/db`, y apunta `MONGODB_URI=mongodb://<nombre-del-servicio>:27017/zest-pasticceria`.
+4. Opcional: pega el `nginx.conf` en **Ajustes → Nginx** del proyecto (el proxy integrado de Dokploy también funciona).
+
+> **API base URL relativa:** `lib/api.js` usa `baseURL: '/api'`. El navegador resuelve las llamadas contra el mismo origen, así que **no** se necesita `NEXT_PUBLIC_URL` en el cliente (evita `ERR_CONNECTION_REFUSED` cuando la variable no está o el dominio cambia).
+
+### 7. Crear el admin por API (fallback)
+
+Si el admin no se creó en el arranque, se puede crear por API con el endpoint `POST /api/auth/ensure-admin` (protegido con `BOOTSTRAP_SECRET`):
+
+```bash
+curl -X POST https://tudominio.com/api/auth/ensure-admin \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <BOOTSTRAP_SECRET>" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "Admin.123",
+    "nome": "Admin"
+  }'
+```
+
+Respuestas: `201` admin creado, `200` ya existía (se asegura el rol `admin`). Requisito: `BOOTSTRAP_SECRET` configurado en Dokploy.
+
+### 8. Verificación
+
+- En los logs de la app al primer arranque debe aparecer `[seed] Admin user created (luismarin@usa.com)` (o `already exists`).
+- Entrar a `https://tudominio.com/login` con el admin y confirmar el acceso.
+
+---
+
 **Total estimado: ~22 días de desarrollo**
