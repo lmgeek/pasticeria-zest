@@ -13,7 +13,7 @@ export async function POST(request) {
     }
 
     await connectDB()
-    const user = await User.findOne({ email, attivo: true })
+    const user = await User.findOne({ email: email.toLowerCase().trim(), attivo: true })
     if (!user || !user.password) {
       return NextResponse.json({ message: 'Email non registrata' }, { status: 401 })
     }
