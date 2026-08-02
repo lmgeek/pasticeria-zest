@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import { generateToken } from '@/lib/auth'
+import { getAppBaseUrl } from '@/lib/urls'
 import User from '@/models/User'
 
 export async function GET(request) {
+  const baseUrl = getAppBaseUrl(request)
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
 
   if (!code) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=google_auth_failed`)
+    return NextResponse.redirect(`${baseUrl}/login?error=google_auth_failed`)
   }
 
   try {
@@ -19,7 +21,7 @@ export async function GET(request) {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${process.env.NEXT_PUBLIC_URL}/api/auth/google/callback`,
+        redirect_uri: `${baseUrl}/api/auth/google/callback`,
         grant_type: 'authorization_code',
       }),
     })
@@ -51,7 +53,7 @@ export async function GET(request) {
     }
 
     const token = generateToken(user)
-    const response = NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/login?token=${token}`)
+    const response = NextResponse.redirect(`${baseUrl}/login?token=${token}`)
     response.cookies.set('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -62,6 +64,6 @@ export async function GET(request) {
     return response
   } catch (error) {
     console.error('Google auth error:', error)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_URL}/login?error=google_auth_failed`)
+    return NextResponse.redirect(`${baseUrl}/login?error=google_auth_failed`)
   }
 }

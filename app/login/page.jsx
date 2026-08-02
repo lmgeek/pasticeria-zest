@@ -50,7 +50,6 @@ function LoginForm() {
             {loading ? 'Accesso in corso...' : 'Accedi'}
           </button>
         </form>
-        <a href="/api/auth/google" className="btn btn-secondary btn-full">Accedi con Google</a>
       </div>
     </div>
   )

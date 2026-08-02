@@ -236,7 +236,7 @@ Esto inicia simultáneamente:
 
 1. En Dokploy, crea una nueva **Aplicación Dockerfile** y conecta este repositorio de GitHub
 2. Dokploy usará el `Dockerfile` de la raíz automáticamente (puerto interno `3000`)
-3. Configura las **variables de entorno** (deben incluir `NEXT_PUBLIC_URL`, que se inyecta en el build):
+3. Configura las **variables de entorno**:
 
 | Variable | Valor |
 |----------|-------|
@@ -245,7 +245,7 @@ Esto inicia simultáneamente:
 | `STRIPE_SECRET_KEY` | La `sk_live_...` / `sk_test_...` que copiaste de Stripe |
 | `STRIPE_PUBLISHABLE_KEY` | La `pk_live_...` / `pk_test_...` de Stripe |
 | `STRIPE_WEBHOOK_SECRET` | El `whsec_...` del webhook (paso 4) |
-| `NEXT_PUBLIC_URL` | `https://tudominio.com` (tu dominio real) |
+| `NEXT_PUBLIC_URL` | *(opcional)* `https://tudominio.com`. Solo override de Google OAuth; si está vacío o apunta a `localhost`, la app usa el origin del request. **Nunca pongas `http://localhost:3000`** |
 | `SMTP_HOST` | ej. `smtp.resend.com` (o el de tu proveedor) |
 | `SMTP_PORT` | `465` |
 | `SMTP_USER` | Usuario del SMTP |
@@ -339,10 +339,6 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Solo si la app lee NEXT_PUBLIC_* en el build (ej: base URL de la API)
-ARG NEXT_PUBLIC_URL
-ENV NEXT_PUBLIC_URL=$NEXT_PUBLIC_URL
-
 RUN npm run build
 
 FROM base AS runner
@@ -384,7 +380,6 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_TELEMETRY_DISABLED=1
-        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
     restart: unless-stopped
     ports:
       - "${APP_PORT:-3000}:3000"
@@ -603,7 +598,7 @@ En `package.json`:
 | `MONGODB_URI` | Atlas (`mongodb+srv://...`) o interno (`mongodb://<mongo-service>:27017/db`) |
 | `JWT_SECRET` | Clave secreta larga y aleatoria |
 | `BOOTSTRAP_SECRET` | Secreto para crear el admin por API (opcional) |
-| `NEXT_PUBLIC_URL` | `https://tudominio.com` (solo lo usa el servidor, p. ej. redirects de Google OAuth) |
+| `NEXT_PUBLIC_URL` | *(opcional)* solo como override de Google OAuth; si se deja vacío la app usa el origin del request. **Nunca poner `localhost`** |
 | `APP_PORT` | *(opcional)* puerto externo, default `3000` |
 
 3. **MongoDB** (opción A — Atlas): crea un cluster gratuito y copia el connection string en `MONGODB_URI`. (opción B — instancia en Dokploy): crea un servicio aparte con imagen `mongo:7`, volumen en `/data/db`, y apunta `MONGODB_URI=mongodb://<nombre-del-servicio>:27017/zest-pasticceria`.
