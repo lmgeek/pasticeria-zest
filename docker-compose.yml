@@ -1,48 +1,31 @@
 services:
-  mongodb:
-    image: mongo:7
-    container_name: zest-mongodb
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - zest-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
-      interval: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
-
   app:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3000}
-    container_name: zest-app
+        - NEXT_TELEMETRY_DISABLED=1
+        - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+    restart: unless-stopped
     ports:
       - "${APP_PORT:-3000}:3000"
-    env_file:
-      - .env.local
     environment:
-      - MONGODB_URI=mongodb://mongodb:27017/zest-pasticceria
-      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL:-http://localhost:3000}
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/.next
-    networks:
-      - zest-network
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    restart: unless-stopped
-
-networks:
-  zest-network:
-    driver: bridge
-
-volumes:
-  mongodb_data:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
+      - NEXT_TELEMETRY_DISABLED=1
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
