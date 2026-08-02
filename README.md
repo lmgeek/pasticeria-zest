@@ -266,9 +266,11 @@ Para que Stripe notifique al servidor cuando un pago se confirme:
    - Eventos: `payment_intent.succeeded`
 2. Copia el **Signing secret** (`whsec_...`) y ponlo en `STRIPE_WEBHOOK_SECRET`
 
-### 5. Primer inicio — Seed de datos
+### 5. Seed de datos (automático)
 
-El seed crea el admin y los datos iniciales (es idempotente, se puede correr varias veces). Ejecútalo **desde tu máquina** apuntando a la base de producción:
+El seed crea el admin y los datos iniciales (es idempotente, se puede correr varias veces). **Ya no hay que ejecutarlo a mano**: se ejecuta automáticamente al arrancar el contenedor de la app (`instrumentation.js` → `lib/seed.mjs`), solo si falta algo.
+
+Si igualmente quieres correrlo manualmente desde tu máquina contra la base de producción:
 
 ```bash
 MONGODB_URI="mongodb://zest-mongodb:27017/zest-pasticceria" npm run seed
@@ -276,7 +278,7 @@ MONGODB_URI="mongodb://zest-mongodb:27017/zest-pasticceria" npm run seed
 
 > Si `MONGODB_URI` usa el hostname interno de Dokploy (`zest-mongodb`), ejecútalo localmente con la IP pública del servidor (`mongodb://IP_DEL_SERVIDOR:27017/zest-pasticceria`) o desde otro contenedor dentro de la red de Dokploy.
 
-Esto creará:
+Esto creará (o confirmará que existen):
 - **Admin:** `luismarin@usa.com` / `LuisMarin.123`
 - **Categorías:** Torte, Dolci, Biscotti, Bevande
 - **Configuración inicial del negocio**

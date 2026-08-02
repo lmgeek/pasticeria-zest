@@ -12,7 +12,7 @@ while ! node -e "
 done
 
 echo "MongoDB ready. Running seed..."
-node lib/seed.mjs
+node lib/seed-cli.mjs
 
 echo "Starting dev server..."
 exec npm run dev

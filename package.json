@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node lib/seed.mjs"
+    "seed": "node lib/seed-cli.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
