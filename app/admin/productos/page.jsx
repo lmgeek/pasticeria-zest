@@ -65,6 +65,12 @@ export default function Productos() {
   }
 
   const columns = [
+    {
+      key: 'immagine', label: '', width: 70,
+      render: (val) => val
+        ? <img src={val} alt="" className="datatable-thumb" />
+        : <span className="datatable-thumb datatable-thumb--empty">—</span>,
+    },
     { key: 'nome', label: t('admin.products') },
     { key: 'categoria', label: t('admin.categories'), render: (val) => val?.nome || '-' },
     { key: 'prezzo', label: 'Prezzo', render: (val) => `€${val?.toFixed(2)}` },

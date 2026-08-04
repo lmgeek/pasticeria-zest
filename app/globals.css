@@ -347,6 +347,8 @@ img{max-width:100%;display:block}
 .datatable-empty{text-align:center;color:var(--text-light);padding:48px 20px!important;font-size:.9rem}
 .datatable-actions{white-space:nowrap}
 .datatable-action-btns{display:flex;gap:8px;justify-content:flex-end}
+.datatable-thumb{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid var(--warm-beige);display:inline-block}
+.datatable-thumb--empty{display:inline-flex;align-items:center;justify-content:center;background:var(--warm-beige);color:var(--text-light);font-size:.8rem}
 .btn-danger{color:#c0392b;border-color:#c0392b}
 .btn-danger:hover{background:#c0392b;color:white}
 .datatable-pagination{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 20px;border-top:1px solid var(--warm-beige);font-size:.85rem;color:var(--text-light)}
