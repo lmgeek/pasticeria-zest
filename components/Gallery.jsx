@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 const GALLERY_ITEMS = [
@@ -15,6 +16,18 @@ const GALLERY_ITEMS = [
 
 export default function Gallery() {
   const { t } = useTranslation()
+  const [selected, setSelected] = useState(null)
+
+  useEffect(() => {
+    if (!selected) return
+    const onKey = (e) => { if (e.key === 'Escape') setSelected(null) }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [selected])
 
   return (
     <div className="gallery">
@@ -24,15 +37,23 @@ export default function Gallery() {
       </div>
       <div className="gallery-grid">
         {GALLERY_ITEMS.map((item) => (
-          <div key={item.id} className={`gallery-card ${item.span}`}>
+          <div key={item.id} className={`gallery-card ${item.span}`} onClick={() => setSelected(item)} role="button" aria-label={item.title}>
             <div className="gallery-card-bg" style={{ backgroundImage: `url(${item.img})` }} />
             <div className="gallery-card-content">
               <h3>{item.title}</h3>
-              <span>Scopri di più →</span>
             </div>
           </div>
         ))}
       </div>
+      {selected && (
+        <div className="gallery-lightbox" onClick={() => setSelected(null)}>
+          <button className="gallery-lightbox-close" onClick={() => setSelected(null)} aria-label="Close">×</button>
+          <img src={selected.img} alt={selected.title} className="gallery-lightbox-img" />
+          <div className="gallery-lightbox-caption">
+            <h3>{selected.title}</h3>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
