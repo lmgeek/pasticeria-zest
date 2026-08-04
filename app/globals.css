@@ -346,6 +346,9 @@ img{max-width:100%;display:block}
 .datatable-table tr.clickable:hover{background:rgba(172,148,88,.04)}
 .datatable-empty{text-align:center;color:var(--text-light);padding:48px 20px!important;font-size:.9rem}
 .datatable-actions{white-space:nowrap}
+.datatable-action-btns{display:flex;gap:8px;justify-content:flex-end}
+.btn-danger{color:#c0392b;border-color:#c0392b}
+.btn-danger:hover{background:#c0392b;color:white}
 .datatable-pagination{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px 20px;border-top:1px solid var(--warm-beige);font-size:.85rem;color:var(--text-light)}
 .datatable-pagination button{padding:6px 14px;border:1.5px solid var(--warm-beige);border-radius:6px;background:white;cursor:pointer;font-size:1rem;transition:all .2s}
 .datatable-pagination button:hover:not(:disabled){border-color:var(--gold);color:var(--primary)}

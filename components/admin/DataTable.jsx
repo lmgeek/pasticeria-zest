@@ -40,7 +40,7 @@ export default function DataTable({ columns, data, searchKey, onSearch, loading,
               {columns.map((col) => (
                 <th key={col.key} style={col.width ? { width: col.width } : undefined}>{col.label}</th>
               ))}
-              {actions && <th style={{ width: 80 }}></th>}
+              {actions && <th style={{ width: 180 }}></th>}
             </tr>
           </thead>
           <tbody>

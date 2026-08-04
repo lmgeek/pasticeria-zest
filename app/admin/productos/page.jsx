@@ -78,7 +78,12 @@ export default function Productos() {
         <button className="btn btn-primary btn-small" onClick={openCreate}>{t('admin.create')}</button>
       </div>
       <DataTable columns={columns} data={products} searchKey="nome" loading={loading} onRowClick={openEdit}
-        actions={(row) => <button className="btn btn-small btn-outline" onClick={() => handleDelete(row._id)}>{t('admin.delete')}</button>}
+        actions={(row) => (
+          <div className="datatable-action-btns">
+            <button className="btn btn-small btn-outline" onClick={() => openEdit(row)}>{t('admin.edit')}</button>
+            <button className="btn btn-small btn-outline btn-danger" onClick={() => handleDelete(row._id)}>{t('admin.delete')}</button>
+          </div>
+        )}
       />
       <ModalForm isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Modifica Prodotto' : 'Nuovo Prodotto'} onSubmit={handleSave} loading={saving}>
         <FormField label="Nome" name="nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} required />
