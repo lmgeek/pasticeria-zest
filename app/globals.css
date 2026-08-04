@@ -436,3 +436,34 @@ img{max-width:100%;display:block}
 .config-stripe-guide li{margin-bottom:4px}
 .config-stripe-guide a{color:var(--primary);text-decoration:underline}
 .config-stripe-guide code{background:var(--warm-beige);padding:2px 6px;border-radius:4px;font-size:.8rem}
+.uc{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--cream);padding:120px 24px 60px}
+.uc-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 25% 15%,rgba(196,149,106,0.18) 0%,transparent 55%),radial-gradient(ellipse at 80% 85%,rgba(28,76,114,0.14) 0%,transparent 55%)}
+.uc-pattern{position:absolute;inset:0;opacity:.5;background-image:radial-gradient(circle at 12% 20%,rgba(172,148,88,.25) 1px,transparent 1.2px),radial-gradient(circle at 75% 40%,rgba(172,148,88,.16) 1px,transparent 1.2px),radial-gradient(circle at 40% 80%,rgba(172,148,88,.18) 1px,transparent 1.2px);background-size:120px 120px,180px 180px,220px 220px}
+.uc-content{position:relative;z-index:1;text-align:center;max-width:680px;margin:0 auto;animation:ucFade 1.2s ease-out}
+@keyframes ucFade{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.uc-eyebrow{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.34em;text-transform:uppercase;color:var(--gold-dark);border:1px solid var(--gold);padding:8px 22px;border-radius:100px;margin-bottom:28px;background:rgba(255,255,255,0.5)}
+.uc-title{font-family:var(--font-display);font-size:clamp(2.4rem,6vw,4.4rem);font-weight:700;line-height:1.08;color:var(--primary);margin-bottom:12px}
+.uc-title-accent{display:block;font-style:italic;font-weight:400;color:var(--gold);font-family:var(--font-script);font-size:clamp(1.8rem,4.5vw,3rem);margin-top:6px}
+.uc-sub{font-size:1.05rem;color:var(--text-light);max-width:480px;margin:0 auto 36px;line-height:1.8}
+.uc-whisk{position:relative;width:72px;height:72px;margin:0 auto 40px}
+.uc-whisk-ball{position:absolute;top:0;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;border:2px solid var(--gold-dark);animation:whiskSpin 7s linear infinite}
+.uc-whisk-ball::before{content:'';position:absolute;inset:6px;border-radius:50%;border:1.5px dashed var(--gold);animation:whiskSpinReverse 7s linear infinite}
+.uc-whisk-ring{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:52px;height:52px;border-radius:50%;border:2px solid var(--accent-warm);opacity:.55}
+.uc-whisk-stem{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:3px;height:24px;border-radius:3px;background:linear-gradient(180deg,var(--gold-dark),var(--accent-warm))}
+@keyframes whiskSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
+@keyframes whiskSpinReverse{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+.uc-progress{width:min(420px,80vw);height:4px;border-radius:4px;background:var(--warm-beige);overflow:hidden;margin:0 auto 20px}
+.uc-progress-bar{display:block;height:100%;width:60%;border-radius:4px;background:linear-gradient(90deg,var(--gold-light),var(--gold-dark));animation:progressPulse 2.4s ease-in-out infinite;transform-origin:left}
+@keyframes progressPulse{0%{transform:scaleX(.4)}50%{transform:scaleX(.85)}100%{transform:scaleX(.4)}}
+.uc-countdown{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:18px}
+.uc-count-cell{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:74px}
+.uc-count-num{font-family:var(--font-display);font-size:2.4rem;font-weight:700;color:var(--primary);line-height:1;font-variant-numeric:tabular-nums}
+.uc-count-label{font-size:.68rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--text-light)}
+.uc-count-sep{font-family:var(--font-display);font-size:2rem;color:var(--gold);padding-bottom:22px}
+.uc-days{display:inline-flex;align-items:center;gap:10px;background:white;border:1px solid var(--warm-beige);border-radius:100px;padding:10px 22px;font-size:.9rem;color:var(--text-light);box-shadow:var(--shadow-sm);margin-bottom:34px}
+.uc-days-badge{background:var(--primary);color:var(--cream);border-radius:100px;padding:2px 14px;font-weight:700;font-size:.85rem}
+.uc-contact{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-size:.92rem}
+.uc-contact a{color:var(--primary);font-weight:600;transition:color .2s}
+.uc-contact a:hover{color:var(--gold-dark)}
+.uc-contact-sep{color:var(--gold)}
+@media (max-width:480px){.uc-count-num{font-size:1.8rem}.uc-count-cell{min-width:60px}.uc{min-height:100dvh}}

@@ -12,6 +12,7 @@ const LABEL_MAP = {
   storeVat: 'Partita IVA',
   storeCurrency: 'Valuta',
   defaultLanguage: 'Lingua',
+  underConstruction: 'Site in manutenzione (Under Construction)',
   smtpHost: 'SMTP Host',
   smtpPort: 'SMTP Porta',
   smtpUser: 'SMTP Utente',
@@ -104,6 +105,15 @@ export default function Configuracion() {
         </select>
       )
     }
+    if (key === 'underConstruction') {
+      return (
+        <label className="form-switch" style={{ justifySelf: 'start' }}>
+          <input type="checkbox" checked={Boolean(config[key])} onChange={(e) => handleChange(key, e.target.checked)} />
+          <span className="form-switch-slider" />
+          <span style={{ fontSize: '.85rem', color: 'var(--text-light)' }}>{config[key] ? 'Attivo' : 'Disattivo'}</span>
+        </label>
+      )
+    }
     if (key === 'storeEmail') {
       return <input type="email" className="config-input" value={value} onChange={(e) => handleChange(key, e.target.value)} />
     }
@@ -113,6 +123,10 @@ export default function Configuracion() {
   if (loading) return <p className="page-loading">{t('admin.loading')}</p>
 
   const sections = [
+    {
+      title: 'Modalità sito',
+      keys: ['underConstruction'],
+    },
     {
       title: 'Informazioni Negozio',
       keys: ['storeName', 'storeEmail', 'storePhone', 'storeAddress', 'storeVat', 'storeCurrency'],

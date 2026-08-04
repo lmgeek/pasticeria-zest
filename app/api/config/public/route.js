@@ -8,6 +8,7 @@ export async function GET() {
       'storeName', 'storeEmail', 'storePhone', 'storeAddress',
       'storeVat', 'storeCurrency', 'defaultLanguage',
       'availableLanguages', 'stripePublishableKey',
+      'underConstruction',
     ]
 
     await connectDB()
